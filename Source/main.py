@@ -1,7 +1,4 @@
-import tkinter as tk
-from rush_hour_game import RushHourGame
+from rush_hour_game import run_game
 
 if __name__ == "__main__":
-    root = tk.Tk()
-    game = RushHourGame(root)
-    root.mainloop()
+    run_game()

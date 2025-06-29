@@ -1,1 +1,3 @@
 # RushHour
+
+pip install pygame
