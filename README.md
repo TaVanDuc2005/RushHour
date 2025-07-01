@@ -3,6 +3,8 @@
 pip install pygame
 pip install opencv-python
 
+Lưu ý:
+
 images:
 A,B,C car is horizontal
 D,E,F car is not horizontal
