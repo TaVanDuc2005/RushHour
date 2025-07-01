@@ -67,7 +67,7 @@ def run_game():
     astar_rect = None
     cancel_rect = None
 
-    # Load video
+    # Load videos
     video_path = "Images/background.mp4"
     video_cap = cv2.VideoCapture(video_path)
     video_fps = video_cap.get(cv2.CAP_PROP_FPS) or 30
