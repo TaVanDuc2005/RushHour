@@ -1,6 +1,8 @@
 import pygame
 from map_loader import load_all_maps
+import cv2
 
+# Constants
 CELL_SIZE = 80
 GRID_SIZE = 6
 GRID_WIDTH = CELL_SIZE * GRID_SIZE
@@ -11,11 +13,14 @@ WIDTH = GRID_WIDTH + MENU_WIDTH
 HEIGHT = GRID_HEIGHT
 FPS = 60
 
-# Màu sắc
+# Colors
 GRAY = (180, 180, 180)
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 YELLOW = (255, 255, 0)
+RED = (200, 0, 0)
+GREEN = (0, 150, 0)
+BLUE = (30, 100, 150)
 
 def run_game():
     pygame.init()
@@ -26,36 +31,48 @@ def run_game():
     font = pygame.font.SysFont("Arial", 24, bold=True)
     big_font = pygame.font.SysFont("Arial", 36, bold=True)
 
-    running = True
+    # Game state variables
     state = "start"
     input_text = ""
-
-    start_rect = None
-    instructions_rect = None
-    back_rect = None
-
-    restart_rect = None
-    back_menu_rect = None
-    auto_rect = None
-
-    continue_rect = None
-    win_back_rect = None
-    completed_back_rect = None
-
+    running = True
     fade_alpha = 0
     blink_timer = 0
     blink_on = True
 
+    # Game data
+    all_maps = load_all_maps()
     cars = []
     selected_car = None
     offset_x = 0
     offset_y = 0
     won = False
     auto_mode = False
-    current_level_index = None
+    current_level = None
 
-    all_maps = load_all_maps()
+    # Rects
+    start_rect = None
+    instructions_rect = None
+    back_rect = None
+    restart_rect = None
+    menu_rect = None
+    auto_rect = None
+    continue_rect = None
+    win_menu_rect = None
+    completed_menu_rect = None
 
+    # Load video
+    video_path = "Images/background.mp4"
+    video_cap = cv2.VideoCapture(video_path)
+    video_fps = video_cap.get(cv2.CAP_PROP_FPS) or 30
+    video_frame_interval = int(1000 / video_fps)
+    video_timer = 0
+    video_surface = None
+
+    # Load background image for grid area
+    bg_image = pygame.image.load("Images/Sidewalk.png").convert()
+    bg_image = pygame.transform.scale(bg_image, (GRID_WIDTH, GRID_HEIGHT))
+
+    # Utility functions
     def draw_grid():
         for i in range(GRID_SIZE + 1):
             pygame.draw.line(screen, GRAY, (0, i * CELL_SIZE), (GRID_WIDTH, i * CELL_SIZE))
@@ -64,45 +81,77 @@ def run_game():
 
     def draw_cars():
         for car in cars:
-            x1 = car.col * CELL_SIZE
-            y1 = car.row * CELL_SIZE
+            x = car.col * CELL_SIZE
+            y = car.row * CELL_SIZE
             w = car.length * CELL_SIZE if car.horizontal else CELL_SIZE
             h = CELL_SIZE if car.horizontal else car.length * CELL_SIZE
-            rect = pygame.Rect(x1 + 5, y1 + 5, w - 10, h - 10)
-            color = pygame.Color(car.color)
-            pygame.draw.rect(screen, color, rect)
-            text = font.render(car.name, True, WHITE)
-            text_rect = text.get_rect(center=rect.center)
-            screen.blit(text, text_rect)
+
+            img = car_images.get(car.name.upper())
+            if img:
+                img_scaled = pygame.transform.scale(img, (w, h))
+                screen.blit(img_scaled, (x, y))
+            else:
+                rect = pygame.Rect(x + 5, y + 5, w - 10, h - 10)
+                pygame.draw.rect(screen, pygame.Color(car.color), rect)
+                label = font.render(car.name, True, WHITE)
+                screen.blit(label, label.get_rect(center=rect.center))
+
 
     def is_blocked(moving_car, target_row, target_col):
-        for car in cars:
-            if car == moving_car:
+        for other in cars:
+            if other == moving_car:
                 continue
             if moving_car.horizontal:
-                if car.horizontal:
-                    if car.row != moving_car.row:
+                if other.horizontal:
+                    if other.row != moving_car.row:
                         continue
-                    if not (target_col + moving_car.length <= car.col or target_col >= car.col + car.length):
+                    if not (target_col + moving_car.length <= other.col or target_col >= other.col + other.length):
                         return True
                 else:
                     for i in range(moving_car.length):
-                        if car.col == target_col + i and car.row <= moving_car.row < car.row + car.length:
+                        if (other.col == target_col + i and 
+                            other.row <= moving_car.row < other.row + other.length):
                             return True
             else:
-                if not car.horizontal:
-                    if car.col != moving_car.col:
+                if not other.horizontal:
+                    if other.col != moving_car.col:
                         continue
-                    if not (target_row + moving_car.length <= car.row or target_row >= car.row + car.length):
+                    if not (target_row + moving_car.length <= other.row or target_row >= other.row + other.length):
                         return True
                 else:
                     for i in range(moving_car.length):
-                        if car.row == target_row + i and car.col <= moving_car.col < car.col + car.length:
+                        if (other.row == target_row + i and 
+                            other.col <= moving_car.col < other.col + other.length):
                             return True
         return False
+    
+    car_images = {}
+    for car_name in ["R", "A", "B", "C", "D", "E", "F"]:
+        try:
+            img = pygame.image.load(f"Images/{car_name}.png").convert_alpha()
+            car_images[car_name] = img
+        except:
+            car_images[car_name] = None
+
 
     while running:
         dt = clock.tick(FPS)
+
+        # Update video
+        if state == "start":
+            video_timer += dt
+            if video_timer >= video_frame_interval:
+                ret, frame = video_cap.read()
+                if not ret:
+                    video_cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
+                    ret, frame = video_cap.read()
+                video_timer = 0
+                if ret:
+                    frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                    frame_resized = cv2.resize(frame_rgb, (WIDTH, HEIGHT))
+                    video_surface = pygame.surfarray.make_surface(frame_resized.swapaxes(0, 1))
+
+        # Events
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
@@ -116,67 +165,50 @@ def run_game():
                         state = "instructions"
 
             elif state == "instructions":
-                if event.type == pygame.MOUSEBUTTONDOWN:
-                    if back_rect and back_rect.collidepoint(event.pos):
-                        state = "start"
+                if event.type == pygame.MOUSEBUTTONDOWN and back_rect and back_rect.collidepoint(event.pos):
+                    state = "start"
 
             elif state == "level_select":
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_RETURN:
                         if input_text.isdigit():
-                            level_index = int(input_text)
-                            if 0 <= level_index < len(all_maps):
-                                cars = all_maps[level_index]
-                                state = "playing"
-                                selected_car = None
+                            level = int(input_text)
+                            if 0 <= level < len(all_maps):
+                                cars = all_maps[level]
+                                current_level = level
                                 won = False
                                 auto_mode = False
-                                current_level_index = level_index
-                            else:
-                                input_text = ""
-                        else:
-                            input_text = ""
+                                state = "playing"
+                        input_text = ""
                     elif event.key == pygame.K_BACKSPACE:
                         input_text = input_text[:-1]
-                    elif event.unicode.isdigit():
-                        if len(input_text) < 3:
-                            input_text += event.unicode
+                    elif event.unicode.isdigit() and len(input_text) < 3:
+                        input_text += event.unicode
 
             elif state == "playing":
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if won:
                         if continue_rect and continue_rect.collidepoint(event.pos):
-                            if current_level_index is not None and current_level_index + 1 < len(all_maps):
-                                current_level_index += 1
-                                cars = load_all_maps()[current_level_index]
+                            if current_level + 1 < len(all_maps):
+                                current_level += 1
+                                cars = load_all_maps()[current_level]
                                 won = False
-                                auto_mode = False
-                                selected_car = None
                             else:
                                 state = "game_completed"
                                 fade_alpha = 0
                                 blink_timer = 0
-                                blink_on = True
-                            continue
-                        if win_back_rect and win_back_rect.collidepoint(event.pos):
+                        elif win_menu_rect and win_menu_rect.collidepoint(event.pos):
                             state = "start"
                             won = False
-                            auto_mode = False
-                            selected_car = None
-                            continue
+                        continue
 
                     if restart_rect and restart_rect.collidepoint(event.pos):
-                        if current_level_index is not None:
-                            cars = load_all_maps()[current_level_index]
-                            won = False
-                            auto_mode = False
-                            selected_car = None
+                        cars = load_all_maps()[current_level]
+                        won = False
                         continue
-                    if back_menu_rect and back_menu_rect.collidepoint(event.pos):
+                    if menu_rect and menu_rect.collidepoint(event.pos):
                         state = "start"
                         won = False
-                        auto_mode = False
-                        selected_car = None
                         continue
                     if auto_rect and auto_rect.collidepoint(event.pos):
                         auto_mode = True
@@ -184,28 +216,24 @@ def run_game():
 
                     if not won:
                         x, y = event.pos
-                        if x >= GRID_WIDTH:
-                            continue
-                        col = x // CELL_SIZE
-                        row = y // CELL_SIZE
-                        for car in cars:
-                            if car.horizontal:
-                                if row == car.row and car.col <= col < car.col + car.length:
+                        if x < GRID_WIDTH:
+                            col = x // CELL_SIZE
+                            row = y // CELL_SIZE
+                            for car in cars:
+                                if car.horizontal and row == car.row and car.col <= col < car.col + car.length:
                                     selected_car = car
                                     offset_x = x - car.col * CELL_SIZE
                                     break
-                            else:
-                                if col == car.col and car.row <= row < car.row + car.length:
+                                if not car.horizontal and col == car.col and car.row <= row < car.row + car.length:
                                     selected_car = car
                                     offset_y = y - car.row * CELL_SIZE
                                     break
 
-                elif event.type == pygame.MOUSEBUTTONUP:
-                    if selected_car:
-                        red_car = next((c for c in cars if c.name.lower() == "r"), None)
-                        if red_car and red_car.col + red_car.length == GRID_SIZE and red_car.row == 2:
-                            won = True
-                        selected_car = None
+                elif event.type == pygame.MOUSEBUTTONUP and selected_car:
+                    red_car = next((c for c in cars if c.name.lower() == "r"), None)
+                    if red_car and red_car.row == 2 and red_car.col + red_car.length == GRID_SIZE:
+                        won = True
+                    selected_car = None
 
                 elif event.type == pygame.MOUSEMOTION and selected_car and not won:
                     x, y = event.pos
@@ -222,108 +250,100 @@ def run_game():
                             car.row = new_row
 
             elif state == "game_completed":
-                if event.type == pygame.MOUSEBUTTONDOWN:
-                    if completed_back_rect and completed_back_rect.collidepoint(event.pos):
-                        state = "start"
+                if event.type == pygame.MOUSEBUTTONDOWN and completed_menu_rect and completed_menu_rect.collidepoint(event.pos):
+                    state = "start"
 
+        # Update blinking
         if state == "game_completed":
-            # Update fade alpha
             if fade_alpha < 255:
                 fade_alpha = min(fade_alpha + 5, 255)
-            # Blink text every 500ms
             blink_timer += dt
             if blink_timer >= 500:
                 blink_on = not blink_on
                 blink_timer = 0
 
-        screen.fill(WHITE)
-
+        # Draw
         if state == "start":
-            screen.fill((50, 150, 200))
-            title_text = big_font.render("Rush Hour Puzzle", True, WHITE)
-            title_rect = title_text.get_rect(center=(WIDTH // 2, HEIGHT // 2 - 80))
-            screen.blit(title_text, title_rect)
+            if video_surface:
+                screen.blit(video_surface, (0, 0))
+            else:
+                screen.fill(BLUE)
+            overlay = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
+            overlay.fill((0, 0, 0, 100))
+            screen.blit(overlay, (0, 0))
 
-            start_text = big_font.render("START", True, WHITE)
-            start_rect = start_text.get_rect(center=(WIDTH // 2, HEIGHT // 2))
-            screen.blit(start_text, start_rect)
-
-            instructions_text = font.render("INSTRUCTIONS", True, WHITE)
-            instructions_rect = instructions_text.get_rect(center=(WIDTH // 2, HEIGHT // 2 + 60))
-            screen.blit(instructions_text, instructions_rect)
+            title = big_font.render("Rush Hour Puzzle", True, WHITE)
+            screen.blit(title, title.get_rect(center=(WIDTH // 2, HEIGHT // 2 - 80)))
+            start = big_font.render("START", True, WHITE)
+            start_rect = start.get_rect(center=(WIDTH // 2, HEIGHT // 2))
+            screen.blit(start, start_rect)
+            instructions = font.render("INSTRUCTIONS", True, WHITE)
+            instructions_rect = instructions.get_rect(center=(WIDTH // 2, HEIGHT // 2 + 60))
+            screen.blit(instructions, instructions_rect)
 
         elif state == "instructions":
-            screen.fill((30, 100, 150))
+            screen.fill(BLUE)
             lines = [
                 "How to play:",
-                "- Objective: Move the red car to the right exit.",
-                "- Drag the car horizontally or vertically to move.",
-                "- Cars cannot pass each other."
+                "- Objective: Move the red car to the exit.",
+                "- Drag cars to move them.",
+                "- Cars cannot overlap."
             ]
-            for idx, line in enumerate(lines):
-                line_text = font.render(line, True, WHITE)
-                line_rect = line_text.get_rect(center=(WIDTH // 2, 100 + idx * 40))
-                screen.blit(line_text, line_rect)
-
-            back_text = font.render("BACK", True, WHITE)
-            back_rect = back_text.get_rect(center=(WIDTH // 2, HEIGHT - 50))
-            screen.blit(back_text, back_rect)
+            for i, line in enumerate(lines):
+                text = font.render(line, True, WHITE)
+                screen.blit(text, (60, 80 + i * 40))
+            back = font.render("BACK", True, WHITE)
+            back_rect = back.get_rect(center=(WIDTH // 2, HEIGHT - 50))
+            screen.blit(back, back_rect)
 
         elif state == "level_select":
             screen.fill((60, 120, 180))
-            prompt = "Enter level: " + input_text
-            prompt_text = font.render(prompt, True, WHITE)
-            prompt_rect = prompt_text.get_rect(center=(WIDTH // 2, HEIGHT // 2))
-            screen.blit(prompt_text, prompt_rect)
+            prompt = font.render(f"Enter level: {input_text}", True, WHITE)
+            screen.blit(prompt, prompt.get_rect(center=(WIDTH // 2, HEIGHT // 2)))
 
         elif state == "playing":
+            # Draw grid background image
+            screen.blit(bg_image, (0, 0))
             draw_grid()
             draw_cars()
 
+            # Draw menu area
             pygame.draw.rect(screen, (230, 230, 230), (GRID_WIDTH, 0, MENU_WIDTH, HEIGHT))
-
-            restart_text = font.render("Restart", True, BLACK)
-            restart_rect = restart_text.get_rect(topleft=(GRID_WIDTH + 10, 50))
-            screen.blit(restart_text, restart_rect)
-
-            back_menu_text = font.render("Back to Menu", True, BLACK)
-            back_menu_rect = back_menu_text.get_rect(topleft=(GRID_WIDTH + 10, 100))
-            screen.blit(back_menu_text, back_menu_rect)
-
-            auto_text = font.render("Auto", True, BLACK)
-            auto_rect = auto_text.get_rect(topleft=(GRID_WIDTH + 10, 150))
-            screen.blit(auto_text, auto_rect)
+            restart = font.render("Restart", True, BLACK)
+            restart_rect = restart.get_rect(topleft=(GRID_WIDTH + 10, 50))
+            screen.blit(restart, restart_rect)
+            menu = font.render("Menu", True, BLACK)
+            menu_rect = menu.get_rect(topleft=(GRID_WIDTH + 10, 100))
+            screen.blit(menu, menu_rect)
+            auto = font.render("Auto", True, BLACK)
+            auto_rect = auto.get_rect(topleft=(GRID_WIDTH + 10, 150))
+            screen.blit(auto, auto_rect)
 
             if auto_mode:
-                auto_mode_text = font.render("Auto mode active!", True, (200, 0, 0))
-                auto_mode_rect = auto_mode_text.get_rect(center=(GRID_WIDTH + MENU_WIDTH // 2, HEIGHT - 30))
-                screen.blit(auto_mode_text, auto_mode_rect)
+                auto_msg = font.render("Auto mode active!", True, RED)
+                screen.blit(auto_msg, auto_msg.get_rect(center=(GRID_WIDTH + MENU_WIDTH // 2, HEIGHT - 30)))
 
             if won:
-                win_text = big_font.render("YOU WIN!", True, (0, 150, 0))
-                win_rect = win_text.get_rect(center=(GRID_WIDTH // 2, HEIGHT // 2 - 40))
-                screen.blit(win_text, win_rect)
-
-                continue_text = font.render("Continue", True, BLACK)
-                continue_rect = continue_text.get_rect(center=(GRID_WIDTH // 2, HEIGHT // 2 + 10))
-                screen.blit(continue_text, continue_rect)
-
-                win_back_text = font.render("Back to Menu", True, BLACK)
-                win_back_rect = win_back_text.get_rect(center=(GRID_WIDTH // 2, HEIGHT // 2 + 60))
-                screen.blit(win_back_text, win_back_rect)
+                win = big_font.render("YOU WIN!", True, GREEN)
+                screen.blit(win, win.get_rect(center=(GRID_WIDTH // 2, HEIGHT // 2 - 40)))
+                cont = font.render("Continue", True, BLACK)
+                continue_rect = cont.get_rect(center=(GRID_WIDTH // 2, HEIGHT // 2 + 10))
+                screen.blit(cont, continue_rect)
+                back = font.render("Back to Menu", True, BLACK)
+                win_menu_rect = back.get_rect(center=(GRID_WIDTH // 2, HEIGHT // 2 + 60))
+                screen.blit(back, win_menu_rect)
 
         elif state == "game_completed":
             screen.fill((80, 180, 80))
-            text_surface = big_font.render("Completed all levels!", True, WHITE)
-            text_surface.set_alpha(fade_alpha)
-            completed_rect = text_surface.get_rect(center=(WIDTH // 2, HEIGHT // 2 - 40))
-            screen.blit(text_surface, completed_rect)
-
+            completed = big_font.render("Completed all levels!", True, WHITE)
+            completed.set_alpha(fade_alpha)
+            screen.blit(completed, completed.get_rect(center=(WIDTH // 2, HEIGHT // 2 - 40)))
             color = YELLOW if blink_on else WHITE
-            back_text = font.render("Back to Menu", True, color)
-            completed_back_rect = back_text.get_rect(center=(WIDTH // 2, HEIGHT // 2 + 20))
-            screen.blit(back_text, completed_back_rect)
+            back = font.render("Back to Menu", True, color)
+            completed_menu_rect = back.get_rect(center=(WIDTH // 2, HEIGHT // 2 + 20))
+            screen.blit(back, completed_menu_rect)
 
         pygame.display.flip()
 
     pygame.quit()
+    video_cap.release()
