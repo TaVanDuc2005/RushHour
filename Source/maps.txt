@@ -21,3 +21,35 @@ AABB..
 ......
 ..C...
 DD....
+
+#Map 3
+.AA...
+.B.C.D
+.B.C.D
+rr...E
+.F.G.E
+.F.G..
+
+#Map 4
+AAABBC
+D.E.FC
+D.E.F.
+G.H.I.
+G.H.I.
+rr....
+
+#Map 5
+.AA.B.
+.C.D.B
+rr.D.E
+.F.G.E
+.F.G.H
+.I.J.H
+
+#Map 6
+.AA.B.
+.CC.B.
+rr.D.E
+.FF.D.
+.G.HH.
+.G.II.
