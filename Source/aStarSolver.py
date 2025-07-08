@@ -1,5 +1,7 @@
 import heapq
-import modelCar as Car # Đảm bảo file modelCar.py chứa class Car nằm cùng thư mục
+# import modelCar as Car # Đảm bảo file modelCar.py chứa class Car nằm cùng thư mục
+from modelCar import Car
+
 BOARD_SIZE = 6
 def get_cars(board):
     cars = []
@@ -31,7 +33,7 @@ def car_to_tuple(car):
 
 def tuple_to_cars(state_tuple):
     """Chuyển đổi một tuple trạng thái (chứa dữ liệu xe dưới dạng tuple) thành danh sách các đối tượng Car."""
-    return [Car.Car(*car_data) for car_data in state_tuple]
+    return [Car(*car_data) for car_data in state_tuple]
 
 def stateToBoard(state, r=6, c=6):
     """Chuyển đổi danh sách các đối tượng Car thành biểu diễn bảng 2D."""
@@ -85,7 +87,7 @@ def SStateList(state):
             for move in range(1, c - (car.col + car.length) + 1):
                 # Kiểm tra ô kế tiếp có trống không
                 if car.col + car.length + move - 1 < c and board[car.row][car.col + car.length + move - 1] == '.':
-                    Ncar = Car.Car(car.name, car.row, car.col + move, car.length, car.horizontal, car.color)
+                    Ncar = Car(car.name, car.row, car.col + move, car.length, car.horizontal, car.color)
                     Nstate = list(current_state_list)
                     Nstate[i] = Ncar
                     SState.append(tuple(car_to_tuple(c_obj) for c_obj in Nstate))
@@ -96,7 +98,7 @@ def SStateList(state):
             for move in range(1, car.col + 1):
                 # Kiểm tra ô kế tiếp có trống không
                 if car.col - move >= 0 and board[car.row][car.col - move] == '.':
-                    Ncar = Car.Car(car.name, car.row, car.col - move, car.length, car.horizontal, car.color)
+                    Ncar = Car(car.name, car.row, car.col - move, car.length, car.horizontal, car.color)
                     Nstate = list(current_state_list)
                     Nstate[i] = Ncar
                     SState.append(tuple(car_to_tuple(c_obj) for c_obj in Nstate))
@@ -109,7 +111,7 @@ def SStateList(state):
             for move in range(1, r - (car.row + car.length) + 1):
                 # Kiểm tra ô kế tiếp có trống không
                 if car.row + car.length + move - 1 < r and board[car.row + car.length + move - 1][car.col] == '.':
-                    Ncar = Car.Car(car.name, car.row + move, car.col, car.length, car.horizontal, car.color)
+                    Ncar = Car(car.name, car.row + move, car.col, car.length, car.horizontal, car.color)
                     Nstate = list(current_state_list)
                     Nstate[i] = Ncar
                     SState.append(tuple(car_to_tuple(c_obj) for c_obj in Nstate))
@@ -120,7 +122,7 @@ def SStateList(state):
             for move in range(1, car.row + 1):
                 # Kiểm tra ô kế tiếp có trống không
                 if car.row - move >= 0 and board[car.row - move][car.col] == '.':
-                    Ncar = Car.Car(car.name, car.row - move, car.col, car.length, car.horizontal, car.color)
+                    Ncar = Car(car.name, car.row - move, car.col, car.length, car.horizontal, car.color)
                     Nstate = list(current_state_list)
                     Nstate[i] = Ncar
                     SState.append(tuple(car_to_tuple(c_obj) for c_obj in Nstate))
@@ -242,27 +244,56 @@ def show_solution(solution_path_with_states):
     
     print("\n--- Hoàn thành lời giải ---")
 
+def get_cars(board):
+    cars = []
+    visited = []
+    for r in range(BOARD_SIZE):
+        for c in range(BOARD_SIZE):
+            cell = board[r][c]
+            if cell == '.' or [r, c] in visited:
+                continue
+            if c + 1 < BOARD_SIZE and board[r][c + 1] == cell:
+                length = 2
+                if c + 2 < BOARD_SIZE and board[r][c + 2] == cell:
+                        length = 3
+                for i in range(length):
+                    visited.append([r, c + 1])
+                cars.append(Car(cell, r, c, length, True, None))
+            elif r + 1 < BOARD_SIZE and board[r + 1][c] == cell:
+                length = 2
+                if r + 2 < BOARD_SIZE and board[r + 2][c] == cell:
+                    length = 3
+                for i in range(length):
+                    visited.append([r + i, c])
+                cars.append(Car(cell, r, c, length, False, None))
+    return cars
+
 
 # --- Ví dụ sử dụng ---
-if __name__ == "__main__":
-    # Định nghĩa bảng ban đầu
-    # (name, row, col, length, horizontal, color)
-    car_A = Car.Car('A', 0, 0, 2, True, 'blue') # Xe A: hàng 0, cột 0, dài 2, ngang
-    car_B = Car.Car('B', 0, 2, 2, True, 'green') # Xe B: hàng 0, cột 2, dài 2, ngang
-    car_r = Car.Car('r', 2, 2, 2, True, 'red') # Xe r (mục tiêu): hàng 2, cột 2, dài 2, ngang
-    car_C = Car.Car('C', 4, 2, 1, False, 'yellow') # Xe C: hàng 4, cột 2, dài 1, dọc (giả định)
-    car_D = Car.Car('D', 5, 0, 2, True, 'purple') # Xe D: hàng 5, cột 0, dài 2, ngang
+def main():
+    initial_board = [
+        ['A', 'D', 'B', '.', 'C', 'C'],
+        ['A', 'D', 'E', '.', 'F', 'G'],
+        ['r', 'r', 'J', '.', 'F', 'G'],
+        ['H', 'I', 'J', '.', 'K', 'K'],
+        ['H', 'I', 'J', '.', 'L', 'L'],
+        ['.', '.', 'M', 'M', '.', '.']
+    ]
+    print("Initial board: ")
+    print_board(initial_board)
 
-    initial_state_list = [car_r, car_A, car_B, car_C, car_D]
+    initial_cars = get_cars(initial_board)
 
-    print("Bắt đầu giải bài toán Rush Hour...")
-    # Optionally, print the initial board to see the starting configuration
-    # print("\nInitial Board:")
-    # print_board(stateToBoard(initial_state_list))
+    solution = None
+    method = 'a_star'
+    if method == 'a_star':
+        solution = A_Star(initial_cars)
 
-    solution_path_with_states = A_Star(initial_state_list)
-
-    if solution_path_with_states:
-        show_solution(solution_path_with_states)
+    if solution:
+        print("Solution found using", method.upper())
+        show_solution(solution)
     else:
-        print("Không tìm thấy lời giải.")
+        print("No solution found.")
+
+if __name__ == '__main__':
+    main()
