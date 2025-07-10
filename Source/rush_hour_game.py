@@ -1,6 +1,8 @@
 import pygame
 from map_loader import load_all_maps
+from BFS_solver import bfs_solver
 import cv2
+import copy
 
 # Constants
 CELL_SIZE = 80
@@ -21,6 +23,12 @@ YELLOW = (255, 255, 0)
 RED = (200, 0, 0)
 GREEN = (0, 150, 0)
 BLUE = (30, 100, 150)
+
+solution_path = []
+solution_index = 0
+solution_timer = 0
+solution_delay = 500  # 500 ms giữa mỗi bước
+
 
 def run_game():
     pygame.init()
@@ -142,7 +150,7 @@ def run_game():
     while running:
         dt = clock.tick(FPS)
 
-        # Update video frame
+        # Update video frame        
         if state == "start":
             video_timer += dt
             if video_timer >= video_frame_interval:
@@ -198,6 +206,11 @@ def run_game():
                             auto_mode = True
                             auto_algorithm = "BFS"
                             auto_selecting = False
+                            solution_path = []
+                            solution_path = bfs_solver(cars)
+                            solution_index = 0
+                            solution_timer = pygame.time.get_ticks()
+
                         elif dfs_rect and dfs_rect.collidepoint(event.pos):
                             auto_mode = True
                             auto_algorithm = "DFS"
@@ -332,6 +345,18 @@ def run_game():
             screen.blit(bg_image, (0, 0))
             draw_grid()
             draw_cars()
+            # Auto Mode
+            if auto_mode and solution_path:
+                current_time = pygame.time.get_ticks()
+                if solution_index < len(solution_path):
+                    if current_time - solution_timer >= solution_delay:
+                        cars = copy.deepcopy(solution_path[solution_index])
+                        solution_index += 1
+                        solution_timer = current_time
+                else:
+                    auto_mode = False
+                    solution_path = []
+
 
             # Menu
             pygame.draw.rect(screen, (230, 230, 230), (GRID_WIDTH, 0, MENU_WIDTH, HEIGHT))
