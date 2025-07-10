@@ -1,6 +1,9 @@
 import pygame
 from map_loader import load_all_maps
 from BFS_solver import bfs_solver
+from DFS_solver import dfs_solver
+from UCS_solver import ucs
+from aStarSolver import A_Star
 import cv2
 import copy
 
@@ -215,14 +218,23 @@ def run_game():
                             auto_mode = True
                             auto_algorithm = "DFS"
                             auto_selecting = False
+                            solution_path = dfs_solver(cars)
+                            solution_index = 0
+                            solution_timer = pygame.time.get_ticks()
                         elif ucs_rect and ucs_rect.collidepoint(event.pos):
                             auto_mode = True
                             auto_algorithm = "UCS"
                             auto_selecting = False
+                            solution_path = ucs(cars)
+                            solution_index = 0
+                            solution_timer = pygame.time.get_ticks()
                         elif astar_rect and astar_rect.collidepoint(event.pos):
                             auto_mode = True
                             auto_algorithm = "A*"
                             auto_selecting = False
+                            solution_path = A_Star(cars)
+                            solution_index = 0
+                            solution_timer = pygame.time.get_ticks()
                         elif cancel_rect and cancel_rect.collidepoint(event.pos):
                             auto_selecting = False
                     continue
