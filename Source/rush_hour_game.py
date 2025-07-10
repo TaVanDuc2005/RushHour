@@ -3,7 +3,7 @@ from map_loader import load_all_maps
 from BFS_solver import bfs_solver
 from DFS_solver import dfs_solver
 from UCS_solver import ucs
-from aStarSolver import A_Star
+from aStarSolver import A_Star_solver
 import cv2
 import copy
 
@@ -232,7 +232,7 @@ def run_game():
                             auto_mode = True
                             auto_algorithm = "A*"
                             auto_selecting = False
-                            solution_path = A_Star(cars)
+                            solution_path = A_Star_solver(cars)
                             solution_index = 0
                             solution_timer = pygame.time.get_ticks()
                         elif cancel_rect and cancel_rect.collidepoint(event.pos):

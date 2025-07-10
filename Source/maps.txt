@@ -47,4 +47,51 @@ HIJ.KK
 HIJ.LL
 ..MM..
 
+#Map 6
+ABB...
+A.CCDD
+rr..E.
+FF..EG
+H..IIG
+HJJ...
+
+#Map 7
+.AA.BB
+..CC..
+rrDE.F
+GGDE.F
+H...II
+HJJ.KK
+
+#Map 8
+.AA.BB
+.CC.D.
+rr.EDF
+GG.E.F
+HHI.JJ
+KKI...
+
+#Map 9
+AABB..
+...CDD
+rr.C.E
+FFG..E
+H.GIIG
+H..KKJ
+
+#Map 10
+...AA.
+BB.CDD
+rrC.E.
+FF..E.
+GGHH..
+..II..
+
+#Map 11
+...AA.
+BB.CDD
+rrC.E.
+FF..E.
+GGHH..
+..II..
 
