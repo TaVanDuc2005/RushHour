@@ -1,5 +1,4 @@
 import heapq
-# import modelCar as Car # Đảm bảo file modelCar.py chứa class Car nằm cùng thư mục
 from modelCar import Car
 
 BOARD_SIZE = 6
@@ -56,7 +55,7 @@ def print_board(board):
         print("|", end="")
         for c_idx, cell in enumerate(row):
             print(cell, end="|")
-        if r_idx == 2: # Hàng 2 là hàng thoát cho xe 'r'
+        if r_idx == 2:
             print(" <--- EXIT")
         else:
             print()
@@ -66,7 +65,6 @@ def is_GState(state, target_car='r', exit_col=5):
     """Kiểm tra xem trạng thái hiện tại có phải là trạng thái mục tiêu không."""
     for car in state:
         if car.name == target_car:
-            # Xe mục tiêu nằm ngang và phần cuối của nó đã ở cột thoát
             if car.horizontal and car.col + car.length - 1 == exit_col:
                 return True
     return False
@@ -78,57 +76,45 @@ def SStateList(state):
     r, c = len(board), len(board[0])
 
     for i, car in enumerate(state):
-        # Tạo một bản sao của trạng thái để sửa đổi
         current_state_list = list(state)
 
-        # Di chuyển xe ngang (horizontal)
         if car.horizontal:
-            # Di chuyển sang phải
             for move in range(1, c - (car.col + car.length) + 1):
-                # Kiểm tra ô kế tiếp có trống không
                 if car.col + car.length + move - 1 < c and board[car.row][car.col + car.length + move - 1] == '.':
                     Ncar = Car(car.name, car.row, car.col + move, car.length, car.horizontal, car.color)
                     Nstate = list(current_state_list)
                     Nstate[i] = Ncar
                     SState.append(tuple(car_to_tuple(c_obj) for c_obj in Nstate))
                 else:
-                    break # Không thể di chuyển tiếp vì bị chặn
+                    break 
 
-            # Di chuyển sang trái
             for move in range(1, car.col + 1):
-                # Kiểm tra ô kế tiếp có trống không
                 if car.col - move >= 0 and board[car.row][car.col - move] == '.':
                     Ncar = Car(car.name, car.row, car.col - move, car.length, car.horizontal, car.color)
                     Nstate = list(current_state_list)
                     Nstate[i] = Ncar
                     SState.append(tuple(car_to_tuple(c_obj) for c_obj in Nstate))
                 else:
-                    break # Không thể di chuyển tiếp vì bị chặn
-
-        # Di chuyển xe dọc (vertical)
+                    break 
         else:
-            # Di chuyển xuống dưới
             for move in range(1, r - (car.row + car.length) + 1):
-                # Kiểm tra ô kế tiếp có trống không
                 if car.row + car.length + move - 1 < r and board[car.row + car.length + move - 1][car.col] == '.':
                     Ncar = Car(car.name, car.row + move, car.col, car.length, car.horizontal, car.color)
                     Nstate = list(current_state_list)
                     Nstate[i] = Ncar
                     SState.append(tuple(car_to_tuple(c_obj) for c_obj in Nstate))
                 else:
-                    break # Không thể di chuyển tiếp vì bị chặn
+                    break 
 
-            # Di chuyển lên trên
             for move in range(1, car.row + 1):
-                # Kiểm tra ô kế tiếp có trống không
                 if car.row - move >= 0 and board[car.row - move][car.col] == '.':
                     Ncar = Car(car.name, car.row - move, car.col, car.length, car.horizontal, car.color)
                     Nstate = list(current_state_list)
                     Nstate[i] = Ncar
                     SState.append(tuple(car_to_tuple(c_obj) for c_obj in Nstate))
                 else:
-                    break # Không thể di chuyển tiếp vì bị chặn
-    return list(set(SState)) # Trả về danh sách các tuple trạng thái duy nhất
+                    break 
+    return list(set(SState)) 
 
 def get_h(state_tuple, exit_col=5):
     """Tính toán hàm heuristic (số xe chặn đường + khoảng trống đến lối thoát)."""
@@ -162,8 +148,8 @@ def get_h(state_tuple, exit_col=5):
 
 def A_Star(init_state_list):
     """Thực hiện thuật toán tìm kiếm A* để giải bài toán Rush Hour."""
-    prior = [] # Priority queue: (f_score, g_score, state_tuple, path)
-    gList = {} # gList[state_tuple] = g_score
+    prior = [] 
+    gList = {} 
 
     init_state_tuple = tuple(car_to_tuple(car) for car in init_state_list)
 
@@ -233,11 +219,9 @@ def show_solution(solution_path_with_states):
         return
 
     print("--- Lời giải đã tìm thấy ---")
-    # Bỏ qua bước 0 vì đó là trạng thái ban đầu, không phải một hành động
     for i, (action, state_tuple) in enumerate(solution_path_with_states):
-        if action is None: # Đây là trạng thái ban đầu
-            # print(f"Bước {i}: Trạng thái ban đầu") # Có thể bỏ qua dòng này hoặc chỉ in một lần
-            continue # Bỏ qua để chỉ in các bước di chuyển
+        if action is None: 
+            continue 
 
         name, dirc, prev_r, prev_c, new_r, new_c = action
         print(f"Bước {i}: Di chuyển xe '{name}' {dirc} từ ({prev_r}, {prev_c}) đến ({new_r}, {new_c})")
