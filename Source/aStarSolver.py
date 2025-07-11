@@ -70,51 +70,47 @@ def is_GState(state, target_car='r', exit_col=5):
     return False
 
 def SStateList(state):
-    """Tạo danh sách các trạng thái kế tiếp từ trạng thái hiện tại."""
+    """Tạo danh sách các trạng thái kế tiếp từ trạng thái hiện tại (mỗi lần di chuyển 1 ô)."""
     SState = []
-    board = stateToBoard(state)
-    r, c = len(board), len(board[0])
+    r, c = BOARD_SIZE, BOARD_SIZE  
 
     for i, car in enumerate(state):
         current_state_list = list(state)
 
-        if car.horizontal:
-            for move in range(1, c - (car.col + car.length) + 1):
-                if car.col + car.length + move - 1 < c and board[car.row][car.col + car.length + move - 1] == '.':
-                    Ncar = Car(car.name, car.row, car.col + move, car.length, car.horizontal, car.color)
-                    Nstate = list(current_state_list)
-                    Nstate[i] = Ncar
-                    SState.append(tuple(car_to_tuple(c_obj) for c_obj in Nstate))
-                else:
-                    break 
+        if car.horizontal and car.col + car.length < c:
+            board = stateToBoard(state)
+            if board[car.row][car.col + car.length] == '.':
+                Ncar = Car(car.name, car.row, car.col + 1, car.length, car.horizontal, car.color)
+                Nstate = list(current_state_list)
+                Nstate[i] = Ncar
+                SState.append(tuple(car_to_tuple(c_obj) for c_obj in Nstate))
 
-            for move in range(1, car.col + 1):
-                if car.col - move >= 0 and board[car.row][car.col - move] == '.':
-                    Ncar = Car(car.name, car.row, car.col - move, car.length, car.horizontal, car.color)
-                    Nstate = list(current_state_list)
-                    Nstate[i] = Ncar
-                    SState.append(tuple(car_to_tuple(c_obj) for c_obj in Nstate))
-                else:
-                    break 
-        else:
-            for move in range(1, r - (car.row + car.length) + 1):
-                if car.row + car.length + move - 1 < r and board[car.row + car.length + move - 1][car.col] == '.':
-                    Ncar = Car(car.name, car.row + move, car.col, car.length, car.horizontal, car.color)
-                    Nstate = list(current_state_list)
-                    Nstate[i] = Ncar
-                    SState.append(tuple(car_to_tuple(c_obj) for c_obj in Nstate))
-                else:
-                    break 
+        if car.horizontal and car.col - 1 >= 0:
+            board = stateToBoard(state)
+            if board[car.row][car.col - 1] == '.':
+                Ncar = Car(car.name, car.row, car.col - 1, car.length, car.horizontal, car.color)
+                Nstate = list(current_state_list)
+                Nstate[i] = Ncar
+                SState.append(tuple(car_to_tuple(c_obj) for c_obj in Nstate))
 
-            for move in range(1, car.row + 1):
-                if car.row - move >= 0 and board[car.row - move][car.col] == '.':
-                    Ncar = Car(car.name, car.row - move, car.col, car.length, car.horizontal, car.color)
-                    Nstate = list(current_state_list)
-                    Nstate[i] = Ncar
-                    SState.append(tuple(car_to_tuple(c_obj) for c_obj in Nstate))
-                else:
-                    break 
-    return list(set(SState)) 
+        if not car.horizontal and car.row + car.length < r:
+            board = stateToBoard(state)
+            if board[car.row + car.length][car.col] == '.':
+                Ncar = Car(car.name, car.row + 1, car.col, car.length, car.horizontal, car.color)
+                Nstate = list(current_state_list)
+                Nstate[i] = Ncar
+                SState.append(tuple(car_to_tuple(c_obj) for c_obj in Nstate))
+
+        if not car.horizontal and car.row - 1 >= 0:
+            board = stateToBoard(state)
+            if board[car.row - 1][car.col] == '.':
+                Ncar = Car(car.name, car.row - 1, car.col, car.length, car.horizontal, car.color)
+                Nstate = list(current_state_list)
+                Nstate[i] = Ncar
+                SState.append(tuple(car_to_tuple(c_obj) for c_obj in Nstate))
+
+    return list(set(SState))
+
 
 def get_h(state_tuple, exit_col=5):
     """Tính toán hàm heuristic (số xe chặn đường + khoảng trống đến lối thoát)."""
@@ -231,18 +227,21 @@ def show_solution(solution_path_with_states):
 def get_cars(board):
     cars = []
     visited = []
+
     for r in range(BOARD_SIZE):
         for c in range(BOARD_SIZE):
             cell = board[r][c]
             if cell == '.' or [r, c] in visited:
                 continue
+
             if c + 1 < BOARD_SIZE and board[r][c + 1] == cell:
                 length = 2
                 if c + 2 < BOARD_SIZE and board[r][c + 2] == cell:
-                        length = 3
+                    length = 3
                 for i in range(length):
-                    visited.append([r, c + 1])
+                    visited.append([r, c + i])
                 cars.append(Car(cell, r, c, length, True, None))
+
             elif r + 1 < BOARD_SIZE and board[r + 1][c] == cell:
                 length = 2
                 if r + 2 < BOARD_SIZE and board[r + 2][c] == cell:
@@ -250,34 +249,62 @@ def get_cars(board):
                 for i in range(length):
                     visited.append([r + i, c])
                 cars.append(Car(cell, r, c, length, False, None))
+
+            else:
+                visited.append([r, c])
+                cars.append(Car(cell, r, c, 1, True, None))  
     return cars
-
-
-# --- Ví dụ sử dụng ---
-def main():
-    initial_board = [
-        ['A', 'D', 'B', '.', 'C', 'C'],
-        ['A', 'D', 'E', '.', 'F', 'G'],
-        ['r', 'r', 'J', '.', 'F', 'G'],
-        ['H', 'I', 'J', '.', 'K', 'K'],
-        ['H', 'I', 'J', '.', 'L', 'L'],
-        ['.', '.', 'M', 'M', '.', '.']
-    ]
-    print("Initial board: ")
-    print_board(initial_board)
-
-    initial_cars = get_cars(initial_board)
-
+def A_Star_solver(board):
+    # print("Initial board: ")
+    # print_board(board)
+    initial_car=get_cars(board)
     solution = None
     method = 'a_star'
     if method == 'a_star':
-        solution = A_Star(initial_cars)
+        solution = A_Star(initial_car)
 
     if solution:
         print("Solution found using", method.upper())
+        print("\n Total step: ", len(solution)-1)
+
         show_solution(solution)
     else:
         print("No solution found.")
 
-if __name__ == '__main__':
-    main()
+# # --- Ví dụ sử dụng ---
+# def main():
+#     initial_board = [
+#     ['.', '.', 'A', 'A', 'B', 'B'],
+#     ['.', '.', '.', '.', 'C', '.'],
+#     ['r', 'r', 'D', 'D', 'C', '.'],
+#     ['E', 'E', 'F', 'F', '.', '.'],
+#     ['G', 'G', '.', '.', '.', '.'],
+#     ['H', 'H', '.', '.', '.', '.']
+# ]
+
+
+
+#     print("Initial board: ")
+#     print_board(initial_board)
+
+#     initial_cars = get_cars(initial_board)
+#     for element in initial_cars :
+#         print(element.name)
+#     solution = None
+#     method = 'a_star'
+#     if method == 'a_star':
+#         solution = A_Star(initial_cars)
+
+#     if solution:
+#         print("Solution found using", method.upper())
+#         print("\n Total step: ", len(solution)-1)
+
+#         show_solution(solution)
+#     else:
+#         print("No solution found.")
+
+# if __name__ == '__main__':
+#     main()
+
+
+

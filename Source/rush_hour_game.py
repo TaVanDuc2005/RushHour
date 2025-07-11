@@ -3,7 +3,7 @@ from map_loader import load_all_maps
 from BFS_solver import bfs_solver
 from DFS_solver import dfs_solver
 from UCS_solver import ucs
-from aStarSolver import A_Star
+from aStarSolver import A_Star_solver
 import cv2
 import copy
 import time 
@@ -232,10 +232,10 @@ def run_game():
                             selected_solver = dfs_solver
                             algo_name = "DFS"
                         elif ucs_rect and ucs_rect.collidepoint(event.pos):
-                            selected_solver = ucs
+                            selected_solver = ucs_solver
                             algo_name = "UCS"
                         elif astar_rect and astar_rect.collidepoint(event.pos):
-                            selected_solver = A_Star
+                            selected_solver = A_Star_solver
                             algo_name = "A*"
                         elif cancel_rect and cancel_rect.collidepoint(event.pos):
                             auto_selecting = False
@@ -423,6 +423,7 @@ def run_game():
 
             if auto_selecting:
                 popup_height = 250
+                popup_width = 200
                 popup_x = (WIDTH - popup_width) // 2
                 popup_y = (HEIGHT - popup_height) // 2
                 pygame.draw.rect(screen, (240, 240, 240), (popup_x, popup_y, popup_width, popup_height))
