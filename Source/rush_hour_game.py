@@ -55,7 +55,7 @@ def run_game():
     big_font = pygame.font.SysFont("Arial", 36, bold=True)
 
     global no_solution_msg_time
-
+    global show_controls
 
     # Game state variables
     state = "start"
@@ -92,6 +92,8 @@ def run_game():
     ucs_rect = None
     astar_rect = None
     cancel_rect = None
+    play_rect = None
+    pause_rect = None
 
     # Load videos
     video_path = "Images/background.mp4"
@@ -220,6 +222,13 @@ def run_game():
                         input_text += event.unicode
 
             elif state == "playing":
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if show_controls:
+                        if play_rect and play_rect.collidepoint(event.pos):
+                            is_playing = True
+                        elif pause_rect and pause_rect.collidepoint(event.pos):
+                            is_playing = False
+
                 if auto_selecting:
                     if event.type == pygame.MOUSEBUTTONDOWN:
                         selected_solver = None
@@ -412,6 +421,18 @@ def run_game():
             screen.blit(auto, auto_rect)
 
             if auto_mode:
+                if show_controls:
+                    play_pause_y = HEIGHT - 70
+                    # Vẽ nút Play
+                    play_text = font.render("Play", True, BLACK)
+                    play_rect = play_text.get_rect(topleft=(GRID_WIDTH + 10, play_pause_y))
+                    screen.blit(play_text, play_rect)
+
+                    # Vẽ nút Pause
+                    pause_text = font.render("Pause", True, BLACK)
+                    pause_rect = pause_text.get_rect(topleft=(GRID_WIDTH + 100, play_pause_y))
+                    screen.blit(pause_text, pause_rect)
+
                 auto_msg = font.render(f"Auto mode: {auto_algorithm}", True, RED)
                 if auto_mode and solution_path:
                     steps_text = font.render(f"Steps: {solution_steps}", True, BLACK)
