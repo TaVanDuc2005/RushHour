@@ -210,7 +210,7 @@ def A_Star(init_state_list):
 
                 heapq.heappush(prior, (new_f, new_g, next_state_tuple, path + [(action, next_state_tuple)]))
 
-    return None
+    return []
 
 def show_solution(solution_path_with_states):
     """Hiển thị các bước giải pháp dưới dạng hướng dẫn, không in bảng."""

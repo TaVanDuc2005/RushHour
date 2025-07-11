@@ -6,6 +6,7 @@ from UCS_solver import ucs
 from aStarSolver import A_Star
 import cv2
 import copy
+import time 
 
 # Constants
 CELL_SIZE = 80
@@ -32,6 +33,17 @@ solution_index = 0
 solution_timer = 0
 solution_delay = 500  # 500 ms giữa mỗi bước
 
+solution_steps = 0
+solution_time_ms = 0
+
+is_playing = False
+show_controls = False
+no_solution_msg_time = None
+
+def check_win(cars):
+    red_car = next((car for car in cars if car.name.lower() == 'r'), None)
+    return red_car and red_car.row == 2 and red_car.col + red_car.length == GRID_SIZE
+
 
 def run_game():
     pygame.init()
@@ -41,6 +53,9 @@ def run_game():
 
     font = pygame.font.SysFont("Arial", 24, bold=True)
     big_font = pygame.font.SysFont("Arial", 36, bold=True)
+
+    global no_solution_msg_time
+
 
     # Game state variables
     state = "start"
@@ -99,6 +114,8 @@ def run_game():
 
     def draw_cars():
         for car in cars:
+            if car is None:
+                continue
             x = car.col * CELL_SIZE
             y = car.row * CELL_SIZE
             w = car.length * CELL_SIZE if car.horizontal else CELL_SIZE
@@ -205,38 +222,45 @@ def run_game():
             elif state == "playing":
                 if auto_selecting:
                     if event.type == pygame.MOUSEBUTTONDOWN:
-                        if bfs_rect and bfs_rect.collidepoint(event.pos):
-                            auto_mode = True
-                            auto_algorithm = "BFS"
-                            auto_selecting = False
-                            solution_path = []
-                            solution_path = bfs_solver(cars)
-                            solution_index = 0
-                            solution_timer = pygame.time.get_ticks()
+                        selected_solver = None
+                        algo_name = ""
 
+                        if bfs_rect and bfs_rect.collidepoint(event.pos):
+                            selected_solver = bfs_solver
+                            algo_name = "BFS"
                         elif dfs_rect and dfs_rect.collidepoint(event.pos):
-                            auto_mode = True
-                            auto_algorithm = "DFS"
-                            auto_selecting = False
-                            solution_path = dfs_solver(cars)
-                            solution_index = 0
-                            solution_timer = pygame.time.get_ticks()
+                            selected_solver = dfs_solver
+                            algo_name = "DFS"
                         elif ucs_rect and ucs_rect.collidepoint(event.pos):
-                            auto_mode = True
-                            auto_algorithm = "UCS"
-                            auto_selecting = False
-                            solution_path = ucs(cars)
-                            solution_index = 0
-                            solution_timer = pygame.time.get_ticks()
+                            selected_solver = ucs
+                            algo_name = "UCS"
                         elif astar_rect and astar_rect.collidepoint(event.pos):
-                            auto_mode = True
-                            auto_algorithm = "A*"
-                            auto_selecting = False
-                            solution_path = A_Star(cars)
-                            solution_index = 0
-                            solution_timer = pygame.time.get_ticks()
+                            selected_solver = A_Star
+                            algo_name = "A*"
                         elif cancel_rect and cancel_rect.collidepoint(event.pos):
                             auto_selecting = False
+                            continue
+
+                        if selected_solver:
+                            auto_mode = True
+                            auto_algorithm = algo_name
+                            auto_selecting = False
+                            start_time = time.time()
+                            solution_path = selected_solver(cars)
+                            end_time = time.time()
+
+                            if not solution_path or len(solution_path) <= 1:
+                                auto_mode = False
+                                show_controls = False
+                                is_playing = False
+                                no_solution_msg_time = pygame.time.get_ticks()
+                            else:
+                                solution_time_ms = int((end_time - start_time) * 1000)
+                                solution_steps = len(solution_path) - 1
+                                solution_index = 0
+                                solution_timer = pygame.time.get_ticks()
+                                is_playing = True
+                                show_controls = True
                     continue
 
                 if event.type == pygame.MOUSEBUTTONDOWN:
@@ -358,16 +382,21 @@ def run_game():
             draw_grid()
             draw_cars()
             # Auto Mode
-            if auto_mode and solution_path:
+            if auto_mode and solution_path and is_playing:
                 current_time = pygame.time.get_ticks()
                 if solution_index < len(solution_path):
                     if current_time - solution_timer >= solution_delay:
                         cars = copy.deepcopy(solution_path[solution_index])
                         solution_index += 1
                         solution_timer = current_time
+                        if solution_index == len(solution_path):
+                            is_playing = False
+                            if check_win(cars):
+                                won = True
                 else:
+                    is_playing = False
                     auto_mode = False
-                    solution_path = []
+
 
 
             # Menu
@@ -375,7 +404,7 @@ def run_game():
             restart = font.render("Restart", True, BLACK)
             restart_rect = restart.get_rect(topleft=(GRID_WIDTH + 10, 50))
             screen.blit(restart, restart_rect)
-            menu = font.render("Menu", True, BLACK)
+            menu = font.render("Menu", True, BLACK) 
             menu_rect = menu.get_rect(topleft=(GRID_WIDTH + 10, 100))
             screen.blit(menu, menu_rect)
             auto = font.render("Auto", True, BLACK)
@@ -384,10 +413,15 @@ def run_game():
 
             if auto_mode:
                 auto_msg = font.render(f"Auto mode: {auto_algorithm}", True, RED)
+                if auto_mode and solution_path:
+                    steps_text = font.render(f"Steps: {solution_steps}", True, BLACK)
+                    time_text = font.render(f"Time: {solution_time_ms} ms", True, BLACK)
+                    screen.blit(steps_text, (GRID_WIDTH + 10, HEIGHT - 140))
+                    screen.blit(time_text, (GRID_WIDTH + 10, HEIGHT - 110))
+
                 screen.blit(auto_msg, auto_msg.get_rect(center=(GRID_WIDTH + MENU_WIDTH // 2, HEIGHT - 30)))
 
             if auto_selecting:
-                popup_width = 200
                 popup_height = 250
                 popup_x = (WIDTH - popup_width) // 2
                 popup_y = (HEIGHT - popup_height) // 2
@@ -436,6 +470,14 @@ def run_game():
             back = font.render("Back to Menu", True, color)
             completed_menu_rect = back.get_rect(center=(WIDTH // 2, HEIGHT // 2 + 20))
             screen.blit(back, completed_menu_rect)
+
+        if no_solution_msg_time:
+            current_time = pygame.time.get_ticks()
+            if current_time - no_solution_msg_time < 2000:
+                message = font.render("No solution found!", True, BLACK)
+                screen.blit(message, message.get_rect(center=(WIDTH // 2, HEIGHT // 2)))
+            else:
+                no_solution_msg_time = None
 
         pygame.display.flip()
 

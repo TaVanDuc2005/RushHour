@@ -41,36 +41,30 @@ def generate_moves(state):
     moves = []
     for idx, car in enumerate(state):
         if car.horizontal:
-            for step in range(1, car.col + 1):
-                new_col = car.col - step
-                if is_blocked(car, car.row, new_col, state):
-                    break
+            new_col = car.col - 1
+            if new_col >= 0 and not is_blocked(car, car.row, new_col, state):
                 new_state = copy.deepcopy(state)
                 new_state[idx].col = new_col
                 moves.append(new_state)
-            for step in range(1, 6 - car.col - car.length + 1):
-                new_col = car.col + step
-                if is_blocked(car, car.row, new_col, state):
-                    break
+            new_col = car.col + 1
+            if new_col + car.length <= 6 and not is_blocked(car, car.row, new_col, state):
                 new_state = copy.deepcopy(state)
                 new_state[idx].col = new_col
                 moves.append(new_state)
         else:
-            for step in range(1, car.row + 1):
-                new_row = car.row - step
-                if is_blocked(car, new_row, car.col, state):
-                    break
+            
+            new_row = car.row - 1
+            if new_row >= 0 and not is_blocked(car, new_row, car.col, state):
                 new_state = copy.deepcopy(state)
                 new_state[idx].row = new_row
                 moves.append(new_state)
-            for step in range(1, 6 - car.row - car.length + 1):
-                new_row = car.row + step
-                if is_blocked(car, new_row, car.col, state):
-                    break
+            new_row = car.row + 1
+            if new_row + car.length <= 6 and not is_blocked(car, new_row, car.col, state):
                 new_state = copy.deepcopy(state)
                 new_state[idx].row = new_row
                 moves.append(new_state)
     return moves
+
 
 def bfs_solver(initial_cars):
     visited = set()

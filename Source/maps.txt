@@ -14,37 +14,5 @@ rr....
 ..D...
 ..D...
 
-# Map 2
-AABB..
-......
-..rr..
-......
-..C...
-<<<<<<< HEAD
-DD....
-
-#Map 3
-AAB.C.
-ADE.C.
-rrE.FG
-HHH.FG
-IJJ.K.
-I.L...
-
-#Map 4
-.AA..B
-.C.D..
-rr.D.E
-.F.G.E
-.F.G.H
-..II.H
-
-#Map 5
-A.B.CC
-ADE.FG
-rrJ.FG
-HIJ.KK
-HIJ.LL
-..MM..
 
 
