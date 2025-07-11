@@ -117,6 +117,8 @@ def A_Star(init_state_list):
     prior = []  
     gList = {}  
 
+    steps_processed = 0
+    
     init_state_tuple = tuple(car_to_tuple(car) for car in init_state_list)
 
     h = get_h(init_state_tuple)
@@ -127,17 +129,19 @@ def A_Star(init_state_list):
 
     while prior:
         f_score, g_score, state_tuple, path = heapq.heappop(prior)
+        steps_processed += 1
         curStateCar = tuple_to_cars(state_tuple) 
 
         if g_score > gList.get(state_tuple, float('inf')):
             continue
 
         if is_GState(curStateCar):
-            return path
+            return path, steps_processed
 
         for next_state_tuple in SStateList(curStateCar):
             cost = 1 
             new_g = g_score + cost 
+            steps_processed += 1
 
             if new_g < gList.get(next_state_tuple, float('inf')):
                 gList[next_state_tuple] = new_g 
@@ -146,12 +150,17 @@ def A_Star(init_state_list):
                 next_state_list = tuple_to_cars(next_state_tuple)
                 
                 heapq.heappush(prior, (new_f, new_g, next_state_tuple, path + [next_state_list]))
+            
 
-    return []
+
+    return [], steps_processed
 
 
 def A_Star_solver(initial_cars_list):
-    solution = A_Star(initial_cars_list)
+    solution, steps = A_Star(initial_cars_list)
+    print(f"BFS completed in {steps} steps.")
+
+
     return solution
 
 
