@@ -6,7 +6,7 @@ def is_goal(cars):
     return red_car is not None and red_car.row == 2 and red_car.col + red_car.length == 6
 
 def get_state_key(cars):
-    return tuple((car.name, car.row, car.col) for car in sorted(cars, key=lambda c: c.name))
+    return tuple((car.name, car.row, car.col) for car in cars)
 
 def is_blocked(moving_car, target_row, target_col, cars):
     for other in cars:
