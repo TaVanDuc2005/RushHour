@@ -158,7 +158,7 @@ def A_Star(init_state_list):
 
 def A_Star_solver(initial_cars_list):
     solution, steps = A_Star(initial_cars_list)
-    print(f"BFS completed in {steps} steps.")
+    print(f"A* completed in {steps} steps.")
 
 
     return solution
