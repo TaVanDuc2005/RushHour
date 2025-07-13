@@ -45,7 +45,7 @@ def generate_moves(state):
     moves = []
     for idx, car in enumerate(state):
         if car.horizontal:
-            # move left by 1 using for loop
+            # move left by 1
             for step in range(1, car.col + 1):
                 new_col = car.col - step
                 if is_blocked(car, car.row, new_col, state):
@@ -54,7 +54,7 @@ def generate_moves(state):
                 new_state[idx].col = new_col
                 moves.append(new_state)
                 break  # only 1 square per move
-            # move right by 1 using for loop
+            # move right by 1
             for step in range(1, 6 - car.col - car.length + 1):
                 new_col = car.col + step
                 if is_blocked(car, car.row, new_col, state):
