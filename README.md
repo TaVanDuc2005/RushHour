@@ -1,59 +1,50 @@
-# RushHour
+# Rush Hour Puzzle Game
+A Python implementation of the classic Rush Hour puzzle game with a graphical interface using Pygame, enhanced with multiple solving algorithms including BFS, DFS, UCS, and A*.
 
+📦 Requirements
+Make sure to install the required Python libraries before running the project:
+'''
 pip install pygame
 pip install opencv-python
+'''
 
-Lưu ý:
+▶️ How to Run
+Navigate to the project folder and run the main script:
 
-images:
-A,B,C car is horizontal
-D,E,F car is not horizontal
+'''
+python source/main.py
+'''
 
-Hình dạng xe
-Mỗi xe phải thoả mãn:
-✅ Tất cả các ô của xe nằm liên tiếp cùng hàng (ngang) hoặc cùng cột (dọc).
-Không được để xe hình chữ L.
+🧠 Solving Algorithms Included
+Breadth-First Search (BFS)
 
-❌ Sai ví dụ:
-..A...
-A.....
-vì A không thẳng hàng.
+Depth-First Search (DFS)
 
-✅ Đúng ví dụ:
-..A...
-..A...
+Uniform Cost Search (UCS)
 
-🟥 đỏ phải nằm ngang
-Luôn nằm ngang, vì mục tiêu là đẩy xe đỏ ra phía bên phải map.
+A Search*
 
-Xe đỏ không được dọc, ví dụ:
-......
-..R...
-..R...
+You can select and visualize each algorithm within the game interface.
 
-là sai.
+🎮 Features
+Drag-and-drop vehicle movement
 
-Ví dụ đúng:
-..RR..
+Play/Pause simulation
 
-🛑 Xe không trùng nhau
-Không có 2 xe chồng lên cùng 1 ô.
+Step-by-step solution visualization
 
-Mỗi ô chỉ thuộc 1 xe duy nhất.
+Map loading
 
-🚪 Cửa ra xe đỏ
-Thường quy định xe đỏ thoát ra bên phải dòng thứ 3 (dòng index 2).
+Real-time display of:
 
-Ví dụ:
-RR....
-thì R nằm trên dòng 2 (dòng thứ 3).
+Algorithm runtime
 
-🧮 Tối thiểu số ô xe
-Mỗi xe phải có ít nhất 2 ô liên tiếp.
+Number of steps
 
-Không được khai báo xe chỉ chiếm 1 ô (sẽ lỗi).
+Solution cost (for UCS/A*)
 
-Ví dụ:
-A.....
-sai, vì A chỉ có 1 ô.
+🗺️ Custom Maps
+Maps can be loaded from the /maps directory. You can create your own custom maps in compatible formats.
+
+
 
