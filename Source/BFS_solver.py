@@ -72,15 +72,15 @@ def bfs_solver(initial_cars):
     queue.append((copy.deepcopy(initial_cars), []))
     visited.add(get_state_key(initial_cars))
 
-    steps = 0
+    nodes = 0
 
     while queue:
         current_state, path = queue.popleft()
-        steps += 1
+        nodes += 1
 
 
         if is_goal(current_state):
-            print(f"BFS found solution in {steps} steps.")
+            print(f"BFS found the solution after having expanded {nodes} nodes.")
             return path + [copy.deepcopy(current_state)]
 
         for next_state in generate_moves(current_state):
