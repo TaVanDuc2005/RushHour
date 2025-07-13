@@ -2,7 +2,7 @@ import pygame
 from map_loader import load_all_maps
 from BFS_solver import bfs_solver
 from DFS_solver import dfs_solver
-from UCS_solver import ucs
+from UCS_solver import ucs_solver
 from aStarSolver import A_Star_solver
 import cv2
 import copy
