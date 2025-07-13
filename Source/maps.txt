@@ -1,15 +1,86 @@
-# Map 0
-AAA..E
-.....E
-RR....
-..F...
-..F...
-BBB...
-
-# Map 1
 ....BB
-..A..B
-rr....
+AAAE..
+rr.EDF
+....DF
+..CCCF
 ......
-..D...
-..D...
+
+# Map 2
+AABB..
+....DF
+rr..DF
+E....F
+E..CCC
+......
+
+#Map 3
+AAACCC
+..E.F.
+rrE.F.
+....F.
+...BB.
+......
+
+#Map 4
+.AAA.B
+...D..
+rr.D.E
+.F.G.E
+.F.G..
+......
+
+#Map 5
+.DECCC
+.DE.F.
+rr..F.
+....F.
+AAA.BB
+......
+
+#Map 6
+AAABB.
+.CCC.D
+rr..ED
+F...E.
+F.....
+F.....
+
+#Map 7
+AAA.BB
+.CCC..
+rrDE.F
+BBDE.F
+.....F
+......
+
+#Map 8
+....BB
+.AAAD.
+rr.EDF
+...E.F
+..CC.F
+......
+
+#Map 9
+..BB..
+.CCCD.
+rrF.DE
+..F..E
+..F...
+.AAA..
+
+#Map 10
+...AAA
+BB...D
+rr.FED
+...FE.
+...F..
+..CCC.
+
+#Map 11
+...AAA
+BB...D
+rr.FED
+...FE.
+CCCF..
+..BB..
