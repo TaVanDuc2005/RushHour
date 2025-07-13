@@ -1,3 +1,4 @@
+# DFS_solver.py
 from collections import deque
 import copy
 
@@ -88,14 +89,14 @@ def dfs_solver(initial_cars):
     stack.append((copy.deepcopy(initial_cars), []))
     visited.add(get_state_key(initial_cars))
 
-    steps = 0
+    nodes = 0
 
     while stack:
         current_state, path = stack.pop()
-        steps += 1
+        nodes += 1
 
         if is_goal(current_state):
-            print(f"DFS found solution in {steps} steps.")
+            print(f"DFS has expanded {nodes} nodes.")
             return path + [copy.deepcopy(current_state)]
 
         for next_state in generate_moves(current_state):
@@ -104,5 +105,4 @@ def dfs_solver(initial_cars):
                 visited.add(key)
                 stack.append((next_state, path + [copy.deepcopy(current_state)]))
 
-    print(f"DFS completed in {steps} steps. No solution found.")
     return []
