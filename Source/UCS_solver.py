@@ -3,9 +3,6 @@ import copy
 from itertools import count
 
 def serialize_state(cars):
-    """
-    Chuyển trạng thái danh sách xe thành dạng tuple duy nhất có thể hash được.
-    """
     return tuple(sorted((car.name, car.row, car.col) for car in cars))
 
 def is_goal_state(cars):
@@ -30,7 +27,7 @@ def get_successors(state):
                 if not blocked:
                     new_state = copy.deepcopy(state)
                     new_state[i].col = new_col
-                    successors.append((new_state, 1))
+                    successors.append((new_state, car.length))
 
             new_col = car.col + 1
             if new_col + car.length <= 6:
@@ -43,7 +40,8 @@ def get_successors(state):
                 if not blocked:
                     new_state = copy.deepcopy(state)
                     new_state[i].col = new_col
-                    successors.append((new_state, 1))
+                    successors.append((new_state, car.length))
+                    successors.append((new_state, car.length))
 
         else:
             new_row = car.row - 1
@@ -57,9 +55,8 @@ def get_successors(state):
                 if not blocked:
                     new_state = copy.deepcopy(state)
                     new_state[i].row = new_row
-                    successors.append((new_state, 1))
+                    successors.append((new_state, car.length))
 
-            # Xuống 1 ô
             new_row = car.row + 1
             if new_row + car.length <= 6:
                 blocked = any(
@@ -71,7 +68,7 @@ def get_successors(state):
                 if not blocked:
                     new_state = copy.deepcopy(state)
                     new_state[i].row = new_row
-                    successors.append((new_state, 1))
+                    successors.append((new_state, car.length))
 
     return successors
 
