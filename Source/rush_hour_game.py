@@ -162,7 +162,7 @@ def run_game():
         return False
 
     car_images = {}
-    for car_name in ["R", "A", "B", "C", "D", "E", "F"]:
+    for car_name in ["R", "A", "B", "C", "D", "E", "F", "G"]:
         try:
             img = pygame.image.load(f"Images/{car_name}.png").convert_alpha()
             car_images[car_name] = img
@@ -256,6 +256,16 @@ def run_game():
                             auto_selecting = False
                             start_time = time.time()
                             solution_path = selected_solver(cars)
+                            
+                            if isinstance(solution_path, tuple):
+                                result = solution_path
+
+                            if isinstance(result, tuple):
+                                solution_path, solution_cost = result
+                            else:
+                                solution_path = result
+                                solution_cost = 0
+
                             end_time = time.time()
 
                             if not solution_path or len(solution_path) <= 1:
@@ -437,8 +447,11 @@ def run_game():
                 if auto_mode and solution_path:
                     steps_text = font.render(f"Steps: {solution_steps}", True, BLACK)
                     time_text = font.render(f"Time: {solution_time_ms} ms", True, BLACK)
-                    screen.blit(steps_text, (GRID_WIDTH + 10, HEIGHT - 140))
-                    screen.blit(time_text, (GRID_WIDTH + 10, HEIGHT - 110))
+                    cost_text = font.render(f"Total cost: {solution_cost}", True, BLACK)
+
+                    screen.blit(steps_text, (GRID_WIDTH + 10, HEIGHT - 170))
+                    screen.blit(time_text, (GRID_WIDTH + 10, HEIGHT - 140))
+                    screen.blit(cost_text, (GRID_WIDTH + 10, HEIGHT - 110))
 
                 screen.blit(auto_msg, auto_msg.get_rect(center=(GRID_WIDTH + MENU_WIDTH // 2, HEIGHT - 30)))
 

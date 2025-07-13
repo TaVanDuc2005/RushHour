@@ -136,7 +136,7 @@ def A_Star(init_state_list):
             continue
 
         if is_GState(curStateCar):
-            return path, steps_processed
+            return path, steps_processed,   g_score
 
         for next_state_tuple in SStateList(curStateCar):
             cost = 1 
@@ -153,12 +153,11 @@ def A_Star(init_state_list):
             
 
 
-    return [], steps_processed
+    return [], steps_processed,
 
 
 def A_Star_solver(initial_cars_list):
-    solution, steps = A_Star(initial_cars_list)
+    solution, steps, total_cost = A_Star(initial_cars_list)
     print(f"A* completed in {steps} steps.")
-
-
-    return solution
+    print(f"Total cost: {total_cost}")
+    return solution, total_cost

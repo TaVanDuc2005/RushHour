@@ -34,8 +34,8 @@ rr.D.E
 .DECCC
 .DE.F.
 rr..F.
-....F.
-AAA.BB
+......
+AA..BB
 ......
 
 #Map 6

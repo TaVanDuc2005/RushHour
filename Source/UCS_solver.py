@@ -92,7 +92,7 @@ def ucs_solver(initial_state):
             print("Goal reached!")
             print("Steps:", len(path) - 1)
             print("Total cost:", cost)
-            return path
+            return path, cost
 
         for next_state, step_cost in get_successors(current_state):
             next_id = serialize_state(next_state)
