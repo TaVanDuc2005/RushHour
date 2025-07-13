@@ -1,6 +1,8 @@
-# bfs_solver.py
 from collections import deque
 import copy
+import tracemalloc
+import time
+
 
 def is_goal(cars):
     red_car = next((car for car in cars if car.name.lower() == 'r'), None)
@@ -67,6 +69,9 @@ def generate_moves(state):
 
 
 def bfs_solver(initial_cars):
+    tracemalloc.start()
+    start_time = time.time()
+
     visited = set()
     queue = deque()
     queue.append((copy.deepcopy(initial_cars), []))
@@ -78,9 +83,15 @@ def bfs_solver(initial_cars):
         current_state, path = queue.popleft()
         nodes += 1
 
-
         if is_goal(current_state):
-            print(f"BFS found the solution after having expanded {nodes} nodes.")
+            end_time = time.time()
+            current, peak = tracemalloc.get_traced_memory()
+            tracemalloc.stop()
+
+            print(f"BFS found the solution after expanding {nodes} nodes.")
+            print(f"Execution time: {(end_time - start_time)*1000:.2f} ms")
+            print(f"Peak memory usage: {peak / 1024:.2f} KB")
+
             return path + [copy.deepcopy(current_state)]
 
         for next_state in generate_moves(current_state):
@@ -88,5 +99,14 @@ def bfs_solver(initial_cars):
             if key not in visited:
                 visited.add(key)
                 queue.append((next_state, path + [copy.deepcopy(current_state)]))
-    print(f"BFS completed in {steps} steps. No solution found.")
+
+    end_time = time.time()
+    current, peak = tracemalloc.get_traced_memory()
+    tracemalloc.stop()
+
+    print(f"BFS completed. No solution found.")
+    print(f"Expanded nodes: {nodes}")
+    print(f"Execution time: {(end_time - start_time)*1000:.2f} ms")
+    print(f"Peak memory usage: {peak / 1024:.2f} KB")
+
     return []

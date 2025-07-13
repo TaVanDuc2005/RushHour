@@ -1,6 +1,7 @@
 import heapq
 import copy
 from itertools import count
+import tracemalloc  
 
 def serialize_state(cars):
     return tuple(sorted((car.name, car.row, car.col) for car in cars))
@@ -74,9 +75,16 @@ def get_successors(state):
 
 # Uniform-Cost Search solver
 def ucs_solver(initial_state):
+    import tracemalloc
+    import time
+
+    tracemalloc.start()
+    start_time = time.time()
+
     frontier = []
     visited = set()
     counter = count()
+    nodes_expanded = 0
 
     heapq.heappush(frontier, (0, next(counter), initial_state, [copy.deepcopy(initial_state)]))
 
@@ -87,11 +95,19 @@ def ucs_solver(initial_state):
         if state_id in visited:
             continue
         visited.add(state_id)
+        nodes_expanded += 1
 
         if is_goal_state(current_state):
+            end_time = time.time()
+            current, peak = tracemalloc.get_traced_memory()
+            tracemalloc.stop()
+
             print("Goal reached!")
             print("Steps:", len(path) - 1)
             print("Total cost:", cost)
+            print("Nodes expanded:", nodes_expanded)
+            print(f"Time: {(end_time - start_time)*1000:.2f} ms")
+            print(f"Peak memory usage: {peak / 1024:.2f} KB")
             return path, cost
 
         for next_state, step_cost in get_successors(current_state):
@@ -104,5 +120,11 @@ def ucs_solver(initial_state):
                     path + [copy.deepcopy(next_state)]
                 ))
 
+    end_time = time.time()
+    current, peak = tracemalloc.get_traced_memory()
+    tracemalloc.stop()
     print("No solution found.")
-    return None
+    print(f"Time: {(end_time - start_time)*1000:.2f} ms")
+    print(f"Peak memory usage: {peak / 1024:.2f} KB")
+    return [], 0
+

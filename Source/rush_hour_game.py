@@ -255,18 +255,24 @@ def run_game():
                             auto_algorithm = algo_name
                             auto_selecting = False
                             start_time = time.time()
-                            solution_path = selected_solver(cars)
-                            
-                            if isinstance(solution_path, tuple):
-                                result = solution_path
+
+                            result = selected_solver(cars)
+                            end_time = time.time()
+
+                            solution_path = []
+                            solution_cost = 0
+                            expanded_nodes = 0
 
                             if isinstance(result, tuple):
-                                solution_path, solution_cost = result
+                                if len(result) == 3:
+                                    solution_path, expanded_nodes, solution_cost = result
+                                elif len(result) == 2:
+                                    solution_path, solution_cost = result
+                                else:
+                                    solution_path = result
                             else:
                                 solution_path = result
-                                solution_cost = 0
 
-                            end_time = time.time()
 
                             if not solution_path or len(solution_path) <= 1:
                                 auto_mode = False
