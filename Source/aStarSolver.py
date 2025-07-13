@@ -1,5 +1,8 @@
 import heapq
 from modelCar import Car
+import tracemalloc
+import time
+
 
 BOARD_SIZE = 6
 
@@ -157,7 +160,22 @@ def A_Star(init_state_list):
 
 
 def A_Star_solver(initial_cars_list):
+    import tracemalloc
+    import time
+
+    tracemalloc.start()
+    start_time = time.time()
+
     solution, steps, total_cost = A_Star(initial_cars_list)
+
+    end_time = time.time()
+    current, peak = tracemalloc.get_traced_memory()
+    tracemalloc.stop()
+
     print(f"A* completed in {steps} steps.")
     print(f"Total cost: {total_cost}")
+    print(f"Execution time: {(end_time - start_time)*1000:.2f} ms")
+    print(f"Peak memory usage: {peak / 1024:.2f} KB")
+
     return solution, total_cost
+

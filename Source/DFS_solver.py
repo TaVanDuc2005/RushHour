@@ -1,6 +1,8 @@
 # DFS_solver.py
 from collections import deque
 import copy
+import time
+import tracemalloc
 
 def is_goal(cars):
     red_car = next((car for car in cars if car.name.lower() == 'r'), None)
@@ -84,6 +86,9 @@ def generate_moves(state):
 
 
 def dfs_solver(initial_cars):
+    tracemalloc.start()
+    start_time = time.time()
+
     visited = set()
     stack = deque()
     stack.append((copy.deepcopy(initial_cars), []))
@@ -96,8 +101,15 @@ def dfs_solver(initial_cars):
         nodes += 1
 
         if is_goal(current_state):
+            end_time = time.time()
+            current, peak = tracemalloc.get_traced_memory()
+            tracemalloc.stop()
+
             print(f"DFS has expanded {nodes} nodes.")
-            return path + [copy.deepcopy(current_state)]
+            print(f"Execution time: {(end_time - start_time) * 1000:.2f} ms")
+            print(f"Peak memory usage: {peak / 1024:.2f} KB")
+
+            return path + [copy.deepcopy(current_state)], 0  # cost = 0
 
         for next_state in generate_moves(current_state):
             key = get_state_key(next_state)
@@ -105,4 +117,13 @@ def dfs_solver(initial_cars):
                 visited.add(key)
                 stack.append((next_state, path + [copy.deepcopy(current_state)]))
 
-    return []
+    end_time = time.time()
+    current, peak = tracemalloc.get_traced_memory()
+    tracemalloc.stop()
+    
+    print("No solution found.")
+    print(f"Execution time: {(end_time - start_time) * 1000:.2f} ms")
+    print(f"Peak memory usage: {peak / 1024:.2f} KB")
+
+    return [], 0
+
